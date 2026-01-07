@@ -258,12 +258,27 @@ class _HomePageState extends ConsumerState<HomePage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7), // iOS Light Gray
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddDialog,
-        backgroundColor: const Color(0xFF007AFF), // Blue to match theme
-        tooltip: "Add Medication",
-        elevation: 4,
-        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            heroTag: "chat",
+            onPressed: () => context.push('/chat'),
+            backgroundColor: Colors.white,
+            foregroundColor: const Color(0xFF007AFF),
+            elevation: 4,
+            child: const Icon(Icons.chat_bubble_outline_rounded, size: 24),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            heroTag: "add",
+            onPressed: _showAddDialog,
+            backgroundColor: const Color(0xFF007AFF),
+            tooltip: "Add Medication",
+            elevation: 4,
+            child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+          ),
+        ],
       ),
       body: Stack(
         children: [

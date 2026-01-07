@@ -126,6 +126,25 @@ class ClinicalService {
       return null;
     }
   }
+
+  Future<String?> chatWithAI(String sessionId, String message) async {
+    try {
+      final response = await _apiClient.client.post('/clinical/chat', 
+        data: {
+          'session_id': sessionId,
+          'message': message
+        }
+      );
+      
+      if (response.statusCode == 200) {
+        return response.data['response'];
+      }
+      return null;
+    } catch (e) {
+      print("Chat Failed: $e");
+      return null;
+    }
+  }
 }
 
 final clinicalServiceProvider = Provider((ref) {

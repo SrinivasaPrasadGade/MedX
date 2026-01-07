@@ -2,6 +2,7 @@ import google.generativeai as genai
 import os
 import re
 import time
+import datetime
 import json
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
@@ -343,6 +344,91 @@ def deidentify_text(request: ExtractionRequest):
     """
     clean_text = _scrub_phi(request.text)
     return {"original_length": len(request.text), "clean_text": clean_text}
+
+from google.cloud import firestore
+
+# --- Database ---
+try:
+    db = firestore.Client()
+    print("✅ Firestore Client Initialized")
+except Exception as e:
+    print(f"❌ Firestore Init Failed: {e}")
+    db = None
+
+# --- Models ---
+class ChatRequest(BaseModel):
+    session_id: str
+    message: str
+
+class ChatResponse(BaseModel):
+    response: str
+
+# --- Chat Logic ---
+@app.post("/chat", response_model=ChatResponse)
+def chat_with_medical_assistant(request: ChatRequest):
+    """
+    Context-aware medical chat using Gemini + Firestore History.
+    """
+    if not os.getenv("GEMINI_API_KEY"):
+         raise HTTPException(status_code=503, detail="AI Service Config Missing")
+
+    # 1. Fetch History
+    history_text = ""
+    if db:
+        try:
+            # Get last 6 messages (3 turns)
+            history_ref = db.collection("chat_sessions").document(request.session_id).collection("messages")
+            docs = history_ref.order_by("timestamp", direction=firestore.Query.DESCENDING).limit(6).stream()
+            
+            msgs = []
+            for doc in docs:
+                data = doc.to_dict()
+                msgs.append(f"{data['role']}: {data['content']}")
+            
+            history_text = "\n".join(reversed(msgs)) 
+        except Exception as e:
+            print(f"History Fetch Error: {e}")
+
+    # 2. Call Gemini
+    try:
+        model = genai.GenerativeModel("gemini-2.5-flash-preview-09-2025")
+        
+        system_prompt = """
+        You are 'MedX Assistant', a helpful, empathetic, and professional medical assistant.
+        - Answer health questions, explain medications, and clarify instructions.
+        - DO NOT diagnose conditions or prescribe meds. Always advise consulting a doctor for serious issues.
+        - Keep answers concise and easy to understand.
+        - Use the conversation history below to provide context-aware answers.
+        """
+        
+        full_prompt = f"{system_prompt}\n\nHISTORY:\n{history_text}\n\nUSER: {request.message}\nASSISTANT:"
+        
+        response = model.generate_content(full_prompt)
+        ai_reply = response.text.strip()
+        
+        # 3. Save to History (Async typically, but sync for MVP)
+        if db:
+            batch = db.batch()
+            doc_user = history_ref.document()
+            batch.set(doc_user, {
+                "role": "USER",
+                "content": request.message, 
+                "timestamp": datetime.datetime.utcnow().isoformat()
+            })
+            
+            doc_ai = history_ref.document()
+            batch.set(doc_ai, {
+                "role": "ASSISTANT",
+                "content": ai_reply,
+                "timestamp": datetime.datetime.utcnow().isoformat()
+            })
+            batch.commit()
+            
+        return ChatResponse(response=ai_reply)
+
+    except Exception as e:
+        print(f"Gemini Chat Failed: {e}")
+        raise HTTPException(status_code=500, detail="AI Chat Failed")
 
 # --- Document Analysis (Gemini) ---
 @app.post("/documents/analyze")

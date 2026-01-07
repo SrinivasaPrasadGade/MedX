@@ -10,6 +10,7 @@ import 'package:patient_app/features/profile/presentation/pages/profile_details_
 import 'package:patient_app/features/auth/presentation/pages/login_page.dart';
 import 'package:patient_app/features/auth/presentation/pages/sign_up_page.dart';
 import 'package:patient_app/features/documents/presentation/pages/upload_page.dart';
+import 'package:patient_app/features/chat/presentation/pages/chat_page.dart';
 
 
 import 'package:patient_app/core/services/notification_service.dart';
@@ -125,6 +126,10 @@ class MedXApp extends ConsumerWidget {
               ),
             ),
           ]
+        ),
+        GoRoute(
+          path: '/chat',
+          builder: (context, state) => const ChatPage(),
         ),
       ],
     );
