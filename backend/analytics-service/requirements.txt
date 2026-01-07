@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+google-cloud-bigquery
+pydantic
+python-multipart
+requests

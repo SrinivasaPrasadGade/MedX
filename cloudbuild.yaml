@@ -1,0 +1,141 @@
+steps:
+  # --- Backend Services ---
+
+  # 1. Auth Service
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'auth-service'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/auth-service'
+      - '--source'
+      - 'backend/auth-service'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+    id: 'deploy-auth'
+
+  # 2. Clinical Service
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'clinical-service'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/clinical-service'
+      - '--source'
+      - 'backend/clinical-service'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+    id: 'deploy-clinical'
+    waitFor: ['-'] # Parallel
+
+  # 3. Medication Service
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'medication-service'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/medication-service'
+      - '--source'
+      - 'backend/medication-service'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+    id: 'deploy-medication'
+    waitFor: ['-'] # Parallel
+
+  # 4. Analytics Service
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'analytics-service'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/analytics-service'
+      - '--source'
+      - 'backend/analytics-service'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+    id: 'deploy-analytics'
+    waitFor: ['-'] # Parallel
+
+  # 5. Notification Service
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'notification-service'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/notification-service'
+      - '--source'
+      - 'backend/notification-service'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+    id: 'deploy-notification'
+    waitFor: ['-'] # Parallel
+
+  # 6. API Gateway
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'api-gateway'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/api-gateway'
+      - '--source'
+      - 'backend/api-gateway'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+    id: 'deploy-gateway'
+    # Deploy Gateway after services to ensure upstream URLs are stable 
+    # (though URLs rarely change, it's good practice)
+    waitFor: ['deploy-auth', 'deploy-clinical', 'deploy-medication', 'deploy-analytics', 'deploy-notification']
+
+  # --- Frontend ---
+
+  # 7. Patient App
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'patient-app'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/patient-app'
+      - '--source'
+      - 'frontend/patient_app'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+    id: 'deploy-frontend'
+    waitFor: ['-'] # Parallel execution with backend services
+
+options:
+  logging: CLOUD_LOGGING_ONLY

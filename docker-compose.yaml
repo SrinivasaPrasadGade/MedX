@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # 1. API Gateway
+  api-gateway:
+    build: backend/api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    depends_on:
+      - auth-service
+      - clinical-service
+      - medication-service
+      - analytics-service
+      - notification-service
+
+  # 2. Auth Service
+  auth-service:
+    build: backend/auth-service
+    environment:
+      - PORT=8000
+
+  # 3. Clinical Service
+  clinical-service:
+    build: backend/clinical-service
+    environment:
+      - PORT=8002
+      - GEMINI_API_KEY=${GEMINI_API_KEY} # Pass from host
+
+  # 4. Medication Service
+  medication-service:
+    build: backend/medication-service
+    environment:
+      - PORT=8001
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+      - PROJECT_ID=${GOOGLE_CLOUD_PROJECT}
+
+  # 5. Analytics Service
+  analytics-service:
+    build: backend/analytics-service
+    environment:
+      - PORT=8003
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+
+  # 6. Notification Service
+  notification-service:
+    build: backend/notification-service
+    environment:
+      - PORT=8004
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+
+  # 7. Frontend (Web)
+  frontend:
+    build: frontend/patient_app
+    ports:
+      - "80:80"
+    depends_on:
+      - api-gateway

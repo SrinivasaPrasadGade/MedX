@@ -1,0 +1,4 @@
+Flask==3.0.0
+google-cloud-language==2.13.0
+google-cloud-healthcare==2.5.0
+gunicorn==21.2.0

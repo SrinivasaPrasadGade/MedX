@@ -1,0 +1,23 @@
+# Google Cloud SDK
+google-cloud-sdk/
+google-cloud-cli-*.tar.gz
+
+# Terraform
+infrastructure/.terraform/
+infrastructure/terraform
+infrastructure/*.zip
+*.tfstate
+*.tfstate.backup
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Flutter
+frontend/patient_app/build/
+frontend/patient_app/.dart_tool/
+
+# OS
+.DS_Store
