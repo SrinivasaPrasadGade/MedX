@@ -57,11 +57,11 @@ export default function LandingPage() {
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
             <h2 className="text-[#0071E3] font-semibold text-lg md:text-xl mb-4 tracking-wide uppercase">The Future of Healthcare</h2>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.05] mb-6 text-black">
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.05] mb-6 text-[#1D1D1F]">
               Intelligent care.<br />
-              <span className="text-gray-400">Reimagined.</span>
+              <span className="text-[#6E6E73]">Reimagined.</span>
             </h1>
-            <p className="text-xl md:text-2xl text-[#86868B] max-w-2xl mx-auto mb-10 leading-relaxed font-light">
+            <p className="text-xl md:text-2xl text-[#424245] max-w-2xl mx-auto mb-10 leading-relaxed font-light">
               Connect hospitals, doctors, and patients in one seamless ecosystem powered by advanced AI.
             </p>
 
