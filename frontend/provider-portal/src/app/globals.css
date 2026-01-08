@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+:root {
+  /* Apple-inspired Color Palette */
+  --background: #F5F5F7; /* Apple light gray background */
+  --foreground: #1D1D1F; /* Apple dark text */
+  
+  --card: #FFFFFF;
+  --card-foreground: #1D1D1F;
+  
+  --popover: #FFFFFF;
+  --popover-foreground: #1D1D1F;
+  
+  /* MedX Brand Colors */
+  --primary: #0071E3; /* Apple Blue */
+  --primary-foreground: #FFFFFF;
+  
+  --secondary: #E8E8ED; /* Apple secondary fill */
+  --secondary-foreground: #1D1D1F;
+  
+  --muted: #86868B; /* Apple subtext gray */
+  --muted-foreground: #86868B;
+  
+  --accent: #F5F5F7;
+  --accent-foreground: #1D1D1F;
+  
+  --destructive: #FF3B30; /* Apple Red */
+  --destructive-foreground: #FFFFFF;
+
+  --border: #D2D2D7; /* Apple separator */
+  --input: #E5E5EA; /* Apple input gray */
+  --ring: #0071E3;
+  
+  --radius: 0.75rem; /* 12px for cards */
+}
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
