@@ -168,6 +168,7 @@ async def toggle_medication(med_id: str):
                 "details": str(new_status)
             }
             bq_client.insert_rows_json(bq_client.dataset(DATASET_ID).table(TABLE_ID), [row])
+            print(f"✅ Logged to BigQuery: {row}")
             
         current_data['isTaken'] = new_status
         current_data['id'] = med_id

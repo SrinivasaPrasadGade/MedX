@@ -42,14 +42,26 @@ class AuthService {
     }
   }
 
-  Future<bool> register(String email, String password, String fullName) async {
+  Future<bool> register({
+    required String email, 
+    required String password, 
+    required String fullName,
+    String? dob,
+    String? gender,
+    String? phone,
+    String? address,
+  }) async {
     try {
       final response = await _apiClient.client.post('/auth/register', 
         data: {
           'email': email, 
           'password': password,
           'full_name': fullName,
-          'role': 'patient'
+          'role': 'patient',
+          'date_of_birth': dob,
+          'gender': gender,
+          'phone': phone,
+          'address': address,
         },
       );
 
@@ -64,6 +76,26 @@ class AuthService {
     } catch (e) {
       print("Registration Failed: $e");
       return false;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getUserProfile() async {
+    try {
+      final response = await _apiClient.client.get('/auth/me'); // auth-service is behind gateway path? Assume /auth if configured, or just /me relative to auth service
+      // Wait, API Gateway mapping check: 
+      // If ApiClient base URL allows direct service access or via gateway.
+      // Standard practice: Gateway routes /auth/* to Auth Service.
+      // Backend added /me. So it should be /auth/me or just /me depending on routing.
+      // Assuming existing /token was /auth/token.
+      // Let's check logic: login uses /auth/token. So register uses /auth/register. So this is /auth/me.
+      
+      if (response.statusCode == 200) {
+        return response.data;
+      }
+      return null;
+    } catch (e) {
+      print("Get Profile Failed: $e");
+      return null;
     }
   }
 

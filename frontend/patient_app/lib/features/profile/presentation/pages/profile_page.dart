@@ -9,6 +9,10 @@ class ProfilePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+    final String fullName = user?['full_name'] ?? "Guest User";
+    final String email = user?['email'] ?? "";
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Profile"),
@@ -41,9 +45,9 @@ class ProfilePage extends ConsumerWidget {
                           BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 5))
                         ],
                       ),
-                      child: const CircleAvatar(
+                      child: CircleAvatar(
                         radius: 50,
-                        backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=John+Doe&background=007AFF&color=fff'),
+                        backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=${Uri.encodeComponent(fullName)}&background=007AFF&color=fff'),
                       ),
                     ),
                     Positioned(
@@ -58,9 +62,9 @@ class ProfilePage extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Text("John Doe", style: Theme.of(context).textTheme.headlineMedium),
+                Text(fullName, style: Theme.of(context).textTheme.headlineMedium),
                 const SizedBox(height: 4),
-                Text("Patient ID: #883920", style: Theme.of(context).textTheme.bodyMedium),
+                Text(email, style: Theme.of(context).textTheme.bodyMedium),
               ],
             ),
           ),

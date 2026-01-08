@@ -43,6 +43,10 @@ class UserBase(BaseModel):
     email: str
     full_name: Optional[str] = None
     role: str = "patient" # patient | provider
+    date_of_birth: Optional[str] = None
+    gender: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
@@ -50,6 +54,9 @@ class UserCreate(UserBase):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class UserResponse(UserBase):
+    pass
 
 # --- Helper Functions ---
 def verify_password(plain_password, hashed_password):
@@ -67,16 +74,46 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+        expire = datetime.utcnow() + timedelta(minutes=60) # Increased to 60m
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+        
+    if not db:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+
+    doc_ref = db.collection(COLLECTION_NAME).document(email)
+    doc = doc_ref.get()
+    
+    if not doc.exists:
+        raise credentials_exception
+        
+    return doc.to_dict()
 
 # --- Endpoints ---
 
 @app.get("/")
 async def root():
     return {"status": "Auth Service Running (Firestore)"}
+
+@app.get("/me", response_model=UserResponse)
+async def read_users_me(current_user: dict = Depends(get_current_user)):
+    """Get current logged in user profile"""
+    return current_user
 
 @app.post("/register", response_model=Token)
 async def register(user: UserCreate):
@@ -96,13 +133,11 @@ async def register(user: UserCreate):
         hashed_password = get_password_hash(user.password)
 
         # 3. Create User in Firestore
-        user_data = {
-            "email": user.email,
-            "full_name": user.full_name,
-            "role": user.role,
-            "hashed_password": hashed_password,
-            "created_at": datetime.utcnow()
-        }
+        user_data = user.dict()
+        user_data["hashed_password"] = hashed_password
+        user_data["created_at"] = datetime.utcnow().isoformat()
+        del user_data["password"] # Don't store plain password
+        
         doc_ref.set(user_data)
         
         # 4. Generate Token

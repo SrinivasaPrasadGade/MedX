@@ -30,43 +30,72 @@ void main() async {
   );
 }
 
-// Auth State with Service Integration
+// User State
+final currentUserProvider = StateProvider<Map<String, dynamic>?>((ref) => null);
+
 // Auth State with Service Integration
 class AuthNotifier extends StateNotifier<bool> {
   final AuthService _authService;
+  final Ref _ref;
   
-  AuthNotifier(this._authService) : super(false) {
+  AuthNotifier(this._authService, this._ref) : super(false) {
     _checkStatus();
   }
 
   Future<void> _checkStatus() async {
     final isLoggedIn = await _authService.checkAuth();
+    if (isLoggedIn) {
+      // Fetch profile if logged in
+      final profile = await _authService.getUserProfile();
+      _ref.read(currentUserProvider.notifier).state = profile;
+    }
     state = isLoggedIn;
   }
 
   Future<void> login(String email, String password) async {
     final success = await _authService.login(email, password);
     if (success) {
+       final profile = await _authService.getUserProfile();
+      _ref.read(currentUserProvider.notifier).state = profile;
       state = true;
     }
   }
 
-  Future<void> register(String email, String password, String fullName) async {
-    final success = await _authService.register(email, password, fullName);
+  Future<void> register({
+    required String email, 
+    required String password, 
+    required String fullName,
+    String? dob,
+    String? gender,
+    String? phone,
+    String? address,
+  }) async {
+    final success = await _authService.register(
+      email: email, 
+      password: password, 
+      fullName: fullName,
+      dob: dob,
+      gender: gender,
+      phone: phone,
+      address: address,
+    );
     if (success) {
+       final profile = await _authService.getUserProfile();
+      _ref.read(currentUserProvider.notifier).state = profile;
       state = true;
     }
   }
 
   void logout() {
     _authService.logout();
+    _ref.read(currentUserProvider.notifier).state = null;
     state = false;
   }
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, bool>((ref) {
   final authService = ref.watch(authServiceProvider);
-  return AuthNotifier(authService);
+  return AuthNotifier(authService, ref);
 });
 final welcomeMessageProvider = StateProvider<String?>((ref) => null);
 

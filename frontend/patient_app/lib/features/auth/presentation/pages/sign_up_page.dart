@@ -16,22 +16,33 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  
+  // New Controllers
+  final _dobController = TextEditingController();
+  final _genderController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
+  
   bool _isLoading = false;
 
   void _handleSignUp() async {
     if (_nameController.text.isEmpty || _emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please fill required fields")));
       return;
     }
 
     setState(() => _isLoading = true);
     
     try {
-      // Call AuthNotifier to register (which calls Service -> API)
+      // Call AuthNotifier to register
       await ref.read(authProvider.notifier).register(
-        _emailController.text,
-        _passwordController.text,
-        _nameController.text
+        email: _emailController.text,
+        password: _passwordController.text,
+        fullName: _nameController.text,
+        dob: _dobController.text,
+        gender: _genderController.text,
+        phone: _phoneController.text,
+        address: _addressController.text,
       );
       
       if (mounted) {
@@ -78,7 +89,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                 "Start your health journey today",
                 style: GoogleFonts.inter(fontSize: 16, color: Colors.grey),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 32),
 
               // Grouped Inputs
               Container(
@@ -107,6 +118,33 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                       placeholder: "Password", 
                       icon: Icons.lock_outline, 
                       obscureText: true,
+                    ),
+                     const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
+                     
+                     // Extra Fields
+                     _MinimalInput(
+                      controller: _dobController, 
+                      placeholder: "Birth Date (YYYY-MM-DD)", 
+                      icon: Icons.calendar_today_outlined,
+                    ),
+                    const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
+                    _MinimalInput(
+                      controller: _genderController, 
+                      placeholder: "Gender", 
+                      icon: Icons.people_outline,
+                    ),
+                    const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
+                    _MinimalInput(
+                      controller: _phoneController, 
+                      placeholder: "Phone", 
+                      icon: Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
+                    _MinimalInput(
+                      controller: _addressController, 
+                      placeholder: "Address", 
+                      icon: Icons.home_outlined,
                       isLast: true,
                     ),
                   ],

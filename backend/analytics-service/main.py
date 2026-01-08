@@ -55,6 +55,8 @@ async def get_weekly_adherence():
                 `{PROJECT_ID}.{DATASET_ID}.{TABLE_ID}`
             WHERE
                 DATE(timestamp) >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 DAY)
+                AND event_type = 'MEDICATION_TOGGLED'
+                AND status = 'TAKEN'
             GROUP BY
                 day_name
             ORDER BY

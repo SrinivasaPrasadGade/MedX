@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:patient_app/main.dart';
 
 class ProfileDetailsPage extends StatelessWidget {
   final String title;
@@ -25,19 +27,27 @@ class ProfileDetailsPage extends StatelessWidget {
   }
 }
 
-class PersonalInfoContent extends StatelessWidget {
+class PersonalInfoContent extends ConsumerWidget {
   const PersonalInfoContent({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+    final String fullName = user?['full_name'] ?? "N/A";
+    final String dob = user?['date_of_birth'] ?? "N/A";
+    final String gender = user?['gender'] ?? "N/A";
+    final String phone = user?['phone'] ?? "N/A";
+    final String email = user?['email'] ?? "N/A";
+    final String address = user?['address'] ?? "N/A";
+
     return Column(
       children: [
-        _InfoRow(label: "Full Name", value: "John Doe"),
-        _InfoRow(label: "Date of Birth", value: "Jan 1, 1980"),
-        _InfoRow(label: "Gender", value: "Male"),
-        _InfoRow(label: "Phone", value: "+1 (555) 123-4567"),
-        _InfoRow(label: "Email", value: "john.doe@example.com"),
-        _InfoRow(label: "Address", value: "123 Health St, Wellness City, CA"),
+        _InfoRow(label: "Full Name", value: fullName),
+        _InfoRow(label: "Date of Birth", value: dob),
+        _InfoRow(label: "Gender", value: gender),
+        _InfoRow(label: "Phone", value: phone),
+        _InfoRow(label: "Email", value: email),
+        _InfoRow(label: "Address", value: address),
       ],
     );
   }
