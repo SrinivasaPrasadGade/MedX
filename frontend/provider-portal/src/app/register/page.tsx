@@ -9,8 +9,8 @@ import Link from 'next/link';
 export default function Register() {
     const router = useRouter();
     const [formData, setFormData] = useState({
-        name: '',
-        address: '',
+        org_name: '',
+        org_address: '',
         admin_name: '',
         admin_email: '',
         admin_password: '',
@@ -115,8 +115,8 @@ export default function Register() {
                                                     required
                                                     className="w-full bg-[#F5F5F7] border-0 text-[#1D1D1F] rounded-xl py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-[#0071E3]/20 focus:bg-white transition-all outline-none font-medium placeholder:text-[#86868B]/50"
                                                     placeholder="e.g. Sinai Health Center"
-                                                    value={formData.name}
-                                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                    value={formData.org_name}
+                                                    onChange={(e) => setFormData({ ...formData, org_name: e.target.value })}
                                                 />
                                             </div>
                                         </div>
@@ -130,8 +130,8 @@ export default function Register() {
                                                     required
                                                     className="w-full bg-[#F5F5F7] border-0 text-[#1D1D1F] rounded-xl py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-[#0071E3]/20 focus:bg-white transition-all outline-none font-medium placeholder:text-[#86868B]/50"
                                                     placeholder="e.g. 1 Infinite Loop"
-                                                    value={formData.address}
-                                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                                    value={formData.org_address}
+                                                    onChange={(e) => setFormData({ ...formData, org_address: e.target.value })}
                                                 />
                                             </div>
                                         </div>
