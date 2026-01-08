@@ -20,6 +20,7 @@ CLINICAL_SERVICE_URL = "https://clinical-service-zxsaiaxzjq-uc.a.run.app"
 MEDICATION_SERVICE_URL = "https://medication-service-zxsaiaxzjq-uc.a.run.app"
 ANALYTICS_SERVICE_URL = "https://analytics-service-zxsaiaxzjq-uc.a.run.app"
 NOTIFICATION_SERVICE_URL = "https://notification-service-zxsaiaxzjq-uc.a.run.app"
+APPOINTMENT_SERVICE_URL = "https://appointment-service-zxsaiaxzjq-uc.a.run.app"
 
 # Service Mappings
 SERVICES = {
@@ -27,7 +28,8 @@ SERVICES = {
     "medications": MEDICATION_SERVICE_URL,
     "clinical": CLINICAL_SERVICE_URL,
     "analytics": ANALYTICS_SERVICE_URL,
-    "notifications": NOTIFICATION_SERVICE_URL
+    "notifications": NOTIFICATION_SERVICE_URL,
+    "appointments": APPOINTMENT_SERVICE_URL
 }
 
 client = httpx.AsyncClient(timeout=60.0)
@@ -104,6 +106,11 @@ async def analytics_proxy(path: str, request: Request):
 @app.api_route("/notifications/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def notifications_proxy(path: str, request: Request):
     return await forward_request(SERVICES["notifications"], path, request)
+
+# Appointment Service
+@app.api_route("/appointments/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+async def appointments_proxy(path: str, request: Request):
+    return await forward_request(SERVICES["appointments"], path, request)
 
 @app.get("/")
 def root():

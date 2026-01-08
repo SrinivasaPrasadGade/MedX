@@ -42,7 +42,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 class UserBase(BaseModel):
     email: str
     full_name: Optional[str] = None
-    role: str = "patient" # patient | provider
+    role: str = "patient" # patient | provider | organization_admin | doctor
+    organization_id: Optional[str] = None
     date_of_birth: Optional[str] = None
     gender: Optional[str] = None
     phone: Optional[str] = None
@@ -187,8 +188,76 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         )
         return {"access_token": access_token, "token_type": "bearer"}
 
-    except HTTPException as he:
-        raise he
     except Exception as e:
         print(f"Login Error: {e}")
         raise HTTPException(status_code=500, detail="Login failed")
+
+@app.get("/users/doctors", response_model=list[UserResponse])
+async def get_doctors(organization_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all doctors for a specific organization"""
+    if not db:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+        
+    try:
+        users_ref = db.collection(COLLECTION_NAME)
+        query = users_ref.where("organization_id", "==", organization_id).where("role", "==", "doctor")
+        docs = query.stream()
+        
+        doctors = []
+        for doc in docs:
+            doctors.append(doc.to_dict())
+            
+        return doctors
+    except Exception as e:
+        print(f"Error fetching doctors: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch doctors")
+
+class OrganizationRegister(BaseModel):
+    org_name: str
+    org_address: str
+    admin_email: str
+    admin_password: str
+    admin_name: str
+
+@app.post("/register-org")
+async def register_organization(org: OrganizationRegister):
+    """Register a new organization and its admin user"""
+    if not db:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+
+    try:
+        # 1. Check if admin email exists
+        user_ref = db.collection(COLLECTION_NAME).document(org.admin_email)
+        if user_ref.get().exists:
+             raise HTTPException(status_code=400, detail="Admin email already registered")
+
+        # 2. Create Organization
+        org_ref = db.collection("organizations").document()
+        org_data = {
+            "id": org_ref.id,
+            "name": org.org_name,
+            "address": org.org_address,
+            "verified": False, # Requires manual verification
+            "created_at": datetime.utcnow().isoformat()
+        }
+        org_ref.set(org_data)
+
+        # 3. Create Admin User
+        hashed_password = get_password_hash(org.admin_password)
+        admin_user_data = {
+            "email": org.admin_email,
+            "full_name": org.admin_name,
+            "hashed_password": hashed_password,
+            "role": "organization_admin",
+            "organization_id": org_ref.id,
+            "created_at": datetime.utcnow().isoformat()
+        }
+        user_ref.set(admin_user_data)
+        
+        return {"message": "Organization registered successfully. Pending verification.", "org_id": org_ref.id}
+    
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Org Registration Error: {e}")
+        raise HTTPException(status_code=500, detail="Registration failed")

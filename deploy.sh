@@ -63,6 +63,7 @@ deploy_service "clinical-service" "backend/clinical-service" 8002
 deploy_service "medication-service" "backend/medication-service" 8001
 deploy_service "analytics-service" "backend/analytics-service" 8003
 deploy_service "notification-service" "backend/notification-service" 8004
+deploy_service "appointment-service" "backend/appointment-service" 8005
 
 # 2. API Gateway
 # Note: In a real prod env, Gateway would point to Cloud Run URLs, not localhost.
