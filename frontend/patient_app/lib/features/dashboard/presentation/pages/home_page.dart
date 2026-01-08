@@ -249,6 +249,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget build(BuildContext context) {
     final today = DateFormat('EEEE, MMM d').format(DateTime.now());
     final medications = ref.watch(medicationProvider);
+    final user = ref.watch(currentUserProvider);
+    final name = user?['full_name'] ?? 'User';
     
     // Calculate adherence
     final takenCount = medications.where((m) => m.isTaken).length.toDouble();
@@ -285,7 +287,17 @@ class _HomePageState extends ConsumerState<HomePage> {
           CustomScrollView(
             slivers: [
               SliverAppBar.large(
-                title: const Text('Summary'),
+                title: Text(
+                  'Welcome Back,\n$name', 
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w700, // Bold
+                    fontSize: 30, // Big
+                    color: Colors.black,
+                    height: 1.1,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 actions: [
                   IconButton(
                     onPressed: () => context.push('/documents'),
@@ -303,9 +315,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                       child: Container(
                         padding: const EdgeInsets.all(2),
                         decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.grey.shade300)),
-                        child: const CircleAvatar(
+                        child: CircleAvatar(
                           radius: 16,
-                          backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=John+Doe&background=007AFF&color=fff'),
+                          backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=${Uri.encodeComponent(name)}&background=007AFF&color=fff'),
                         ),
                       ),
                     ),
