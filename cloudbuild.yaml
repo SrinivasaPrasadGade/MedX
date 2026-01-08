@@ -130,5 +130,23 @@ steps:
     id: 'deploy-frontend'
     waitFor: ['-'] # Parallel execution with backend services
 
+  # 8. Provider Portal
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'provider-portal'
+      - '--allow-unauthenticated'
+      - '--source'
+      - 'frontend/provider-portal'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+    id: 'deploy-provider'
+    waitFor: ['-'] # Parallel
+
 options:
   logging: CLOUD_LOGGING_ONLY

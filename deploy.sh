@@ -88,5 +88,22 @@ gcloud run deploy patient-app \
 echo "✅ Patient App deployed successfully!"
 echo ""
 
+# 4. Provider Portal
+echo "🚀 Deploying Provider Portal..."
+# Build Docker image for provider portal
+gcloud builds submit --tag gcr.io/$PROJECT_ID/provider-portal frontend/provider-portal --quiet
+
+# Deploy Provider Portal
+gcloud run deploy provider-portal \
+  --image gcr.io/$PROJECT_ID/provider-portal \
+  --platform managed \
+  --region $REGION \
+  --port 3000 \
+  --allow-unauthenticated \
+  --quiet
+
+echo "✅ Provider Portal deployed successfully!"
+echo ""
+
 echo "🎉 Deployment Complete!"
 echo "You can access your services via the URLs listed above."
