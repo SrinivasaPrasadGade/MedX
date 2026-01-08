@@ -1,55 +1,54 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:patient_app/main.dart';
-import 'package:google_fonts/google_fonts.dart'; // Added import
+import 'package:google_fonts/google_fonts.dart';
+import 'package:patient_app/core/theme/app_theme.dart';
 
 import 'package:patient_app/core/services/medication_service.dart';
 import 'package:patient_app/core/services/notification_service.dart';
-import 'package:patient_app/core/services/clinical_service.dart'; // Added Import
-
-
+import 'package:patient_app/core/services/clinical_service.dart';
 
 import 'package:patient_app/features/dashboard/presentation/providers/medication_provider.dart';
 
 // --- UI Components ---
 
-class HoverScale extends StatefulWidget {
+class AppleGlassCard extends StatelessWidget {
   final Widget child;
-  final double scale;
-  final Function()? onTap;
+  final EdgeInsetsGeometry? padding;
+  final VoidCallback? onTap;
 
-  const HoverScale({super.key, required this.child, this.scale = 1.02, this.onTap});
-
-  @override
-  State<HoverScale> createState() => _HoverScaleState();
-}
-
-class _HoverScaleState extends State<HoverScale> {
-  bool _isHovered = false;
+  const AppleGlassCard({super.key, required this.child, this.padding, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedScale(
-          scale: _isHovered ? widget.scale : 1.0,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            decoration: BoxDecoration(
-              boxShadow: _isHovered 
-                ? [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 15, offset: const Offset(0, 8))]
-                : [],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
-            child: widget.child,
+             BoxShadow(
+              color: Colors.black.withOpacity(0.01),
+              blurRadius: 1,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: padding ?? const EdgeInsets.all(24),
+            child: child,
           ),
         ),
       ),
@@ -67,13 +66,13 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  bool _showBanner = false;
+  // ... (Keep existing state logic for banner and dialogs)
+    bool _showBanner = false;
   String? _message;
 
   @override
   void initState() {
     super.initState();
-    // Check for welcome message after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final msg = ref.read(welcomeMessageProvider);
       if (msg != null) {
@@ -81,17 +80,19 @@ class _HomePageState extends ConsumerState<HomePage> {
           _message = msg;
           _showBanner = true;
         });
-        
-        // Hide after 3 seconds
         Future.delayed(const Duration(seconds: 3), () {
           if (mounted) setState(() => _showBanner = false);
-          ref.read(welcomeMessageProvider.notifier).state = null; // Clear message
+          ref.read(welcomeMessageProvider.notifier).state = null;
         });
       }
     });
   }
 
   void _showAddDialog() {
+    // ... (Keep existing add dialog logic, maybe style it later if needed, but priority is main UI)
+    // For brevity, I'll keep the logic implementation identical but wrap it to save space in this rewrite if allowed.
+    // Actually, I should keep the full logic to ensure it works. 
+    // I will copy the _showAddDialog logic from previous file but ensuring correct imports.
     final nameController = TextEditingController();
     final dosageController = TextEditingController();
     final timeController = TextEditingController();
@@ -106,14 +107,16 @@ class _HomePageState extends ConsumerState<HomePage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.transparent,
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                   Text("Add Medication", style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+                   Text("Add Medication", style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
                    IconButton(
                      onPressed: () => setState(() => isSmartMode = !isSmartMode),
                      icon: Icon(isSmartMode ? Icons.edit_note : Icons.auto_awesome, 
-                        color: isSmartMode ? Colors.grey : const Color(0xFF007AFF)),
+                        color: isSmartMode ? AppTheme.textSecondary : AppTheme.primary),
                      tooltip: isSmartMode ? "Switch to Manual" : "Switch to Smart Add",
                    )
                 ],
@@ -126,20 +129,22 @@ class _HomePageState extends ConsumerState<HomePage> {
                     children: [
                        Container(
                          padding: const EdgeInsets.all(12),
-                         decoration: BoxDecoration(color: const Color(0xFF007AFF).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                         decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
                          child: Row(children: [
-                            const Icon(Icons.auto_awesome, color: Color(0xFF007AFF), size: 20),
+                            const Icon(Icons.auto_awesome, color: AppTheme.primary, size: 20),
                             const SizedBox(width: 8),
-                            Expanded(child: Text("Type naturally, e.g., 'Take Metformin 500mg at 8am'", style: TextStyle(color: const Color(0xFF007AFF), fontSize: 13)))
+                            const Expanded(child: Text("Type naturally, e.g., 'Take Metformin 500mg at 8am'", style: TextStyle(color: AppTheme.primary, fontSize: 13)))
                          ]),
                        ),
                        const SizedBox(height: 16),
                        TextField(
                          controller: smartController, 
                          maxLines: 3, 
-                         decoration: const InputDecoration(
-                           border: OutlineInputBorder(), 
-                           hintText: "Enter prescription details..."
+                         decoration: InputDecoration(
+                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), 
+                           hintText: "Enter prescription details...",
+                           filled: true,
+                           fillColor: AppTheme.background,
                          )
                        ),
                        const SizedBox(height: 16),
@@ -156,8 +161,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 if (result.name != null) nameController.text = result.name!;
                                 if (result.dosage != null) dosageController.text = result.dosage!;
                                 if (result.time != null) timeController.text = result.time!;
-                                
-                                // Switch back to manual to review
                                 setState(() => isSmartMode = false);
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Could not extract details")));
@@ -165,7 +168,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                            },
                            icon: isAnalyzing ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.analytics),
                            label: const Text("Analyze & Fill"),
-                           style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white)
+                           style: ElevatedButton.styleFrom(
+                             backgroundColor: AppTheme.textPrimary,
+                             foregroundColor: Colors.white,
+                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                             padding: const EdgeInsets.symmetric(vertical: 16)
+                           )
                          ),
                        )
                     ],
@@ -173,9 +181,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                 : Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      TextField(controller: nameController, decoration: const InputDecoration(labelText: "Medication Name")),
-                      TextField(controller: dosageController, decoration: const InputDecoration(labelText: "Dosage (e.g., 10mg)")),
-                      TextField(controller: timeController, decoration: const InputDecoration(labelText: "Time (e.g., 9:00 AM)")),
+                      _buildInput(nameController, "Medication Name"),
+                      const SizedBox(height: 12),
+                      _buildInput(dosageController, "Dosage (e.g., 10mg)"),
+                      const SizedBox(height: 12),
+                      _buildInput(timeController, "Time (e.g., 9:00 AM)"),
                     ],
                   ),
               ),
@@ -183,30 +193,24 @@ class _HomePageState extends ConsumerState<HomePage> {
                 if (!isSmartMode) ...[
                   TextButton(
                     onPressed: () => Navigator.pop(context), 
-                    child: const Text("Cancel", style: TextStyle(color: Colors.grey))
+                    child: Text("Cancel", style: TextStyle(color: AppTheme.textSecondary))
                   ),
                   ElevatedButton(
                     onPressed: () async {
                       if (nameController.text.isNotEmpty) {
-                        // 1. Get Dependencies
                         final navigator = Navigator.of(context);
                         final clinicalService = ref.read(clinicalServiceProvider);
                         final currentMeds = ref.read(medicationProvider);
                         final newMedName = nameController.text;
                         
-                        // 2. Check for Interactions
-                        // ... (Existing interaction logic)
                         final interaction = await clinicalService.checkInteractions(
                           newMedName, 
                           currentMeds.map((m) => m.name).toList()
                         );
 
-                        // 3. Handle Result
                         if (interaction != null && interaction.warning != null) {
-                          // Show Warning Dialog (Nested)
-                          // Note: Nested dialogs in StatefulBuilder context might need root context
                            if (context.mounted) {
-                              showDialog(
+                               showDialog(
                                 context: context, 
                                 builder: (ctx) => AlertDialog(
                                   title: const Row(children: [Icon(Icons.warning, color: Colors.amber), SizedBox(width: 8), Text("Interaction Detected")]),
@@ -232,16 +236,29 @@ class _HomePageState extends ConsumerState<HomePage> {
                         }
                       }
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF007AFF), foregroundColor: Colors.white),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.white, shape: const StadiumBorder()),
                     child: const Text("Add"),
                   ),
                 ]
               ],
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
             );
           }
         );
       }
+    );
+  }
+
+  Widget _buildInput(TextEditingController controller, String label) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: AppTheme.background,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
     );
   }
 
@@ -250,233 +267,211 @@ class _HomePageState extends ConsumerState<HomePage> {
     final today = DateFormat('EEEE, MMM d').format(DateTime.now());
     final medications = ref.watch(medicationProvider);
     final user = ref.watch(currentUserProvider);
-    final name = user?['full_name'] ?? 'User';
+    final name = user?['full_name'] ?? 'Guest';
     
-    // Calculate adherence
     final takenCount = medications.where((m) => m.isTaken).length.toDouble();
     final totalCount = medications.length.toDouble();
-    final adherence = totalCount == 0 ? 0.0 : (takenCount / totalCount) * 100; // Fixed: 0.0 for double
+    final adherence = totalCount == 0 ? 0.0 : (takenCount / totalCount) * 100;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7), // iOS Light Gray
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton(
-            heroTag: "chat",
-            onPressed: () => context.push('/chat'),
-            backgroundColor: Colors.white,
-            foregroundColor: const Color(0xFF007AFF),
-            elevation: 4,
-            child: const Icon(Icons.chat_bubble_outline_rounded, size: 24),
-          ),
-          const SizedBox(height: 16),
-          FloatingActionButton(
-            heroTag: "add",
-            onPressed: _showAddDialog,
-            backgroundColor: const Color(0xFF007AFF),
-            tooltip: "Add Medication",
-            elevation: 4,
-            child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
-          ),
-        ],
+      backgroundColor: AppTheme.background,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppTheme.textPrimary, // Black pill
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 10))
+          ]
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              onPressed: () => context.push('/chat'),
+              icon: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white),
+              tooltip: "AI Assistant",
+            ),
+            Container(height: 24, width: 1, color: Colors.white.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 8)),
+            IconButton(
+              onPressed: _showAddDialog,
+              icon: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+              tooltip: "Add Medication",
+            ),
+          ],
+        ),
       ),
       body: Stack(
         children: [
           CustomScrollView(
             slivers: [
-              SliverAppBar.large(
-                title: Text(
-                  'Welcome Back,\n$name', 
-                  style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w700, // Bold
-                    fontSize: 30, // Big
-                    color: Colors.black,
-                    height: 1.1,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                actions: [
-                  IconButton(
-                    onPressed: () => context.push('/documents'),
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                      child: const Icon(Icons.perm_media_outlined, color: Colors.black, size: 20),
-                    ),
-                    tooltip: "Scan Documents",
-                  ),
-                  IconButton(
-                    onPressed: () => context.push('/profile'), 
-                    icon: Hero(
-                      tag: 'profile-pic',
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.grey.shade300)),
-                        child: CircleAvatar(
-                          radius: 16,
-                          backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=${Uri.encodeComponent(name)}&background=007AFF&color=fff'),
+              // Glass App Bar
+              SliverAppBar(
+                expandedHeight: 120,
+                pinned: true,
+                backgroundColor: AppTheme.background.withOpacity(0.7),
+                flexibleSpace: ClipRRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                    child: FlexibleSpaceBar(
+                      titlePadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      centerTitle: false,
+                      title: Text(
+                        'Good Morning,\n$name', 
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w700, 
+                          color: AppTheme.textPrimary,
+                          fontSize: 20, // Collapsed size
+                          height: 1.1,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                ),
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16.0),
+                    child: GestureDetector(
+                      onTap: () => context.push('/profile'),
+                      child: CircleAvatar(
+                        radius: 18,
+                        backgroundColor: Colors.white,
+                        backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=${Uri.encodeComponent(name)}&background=0071E3&color=fff&size=128'),
+                      ),
+                    ),
+                  )
                 ],
               ),
+              
               SliverPadding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(24.0),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    Text(today.toUpperCase(), 
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600, color: Colors.grey)),
-                    const SizedBox(height: 16),
                     
-                    // Adherence Card
-                    HoverScale(child: _AdherenceCard(adherence: adherence)),
-                    const SizedBox(height: 24),
-
-                    // Weekly Analysis Chart
-                     Text("Weekly Analysis", style: Theme.of(context).textTheme.headlineMedium),
-                     const SizedBox(height: 12),
-                     const HoverScale(scale: 1.01, child: _WeeklyChart()),
-                     const SizedBox(height: 24),
-                    
-                    // Schedule Header
+                    // Dashboard Grid (Bento)
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Today's Schedule", style: Theme.of(context).textTheme.headlineMedium),
-                        TextButton(onPressed: () {}, child: const Text("See All")),
+                        // Adherence (Large)
+                        Expanded(
+                          flex: 3,
+                          child: AppleGlassCard(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Icon(Icons.pie_chart_outline, color: AppTheme.primary),
+                                    Text("${adherence.toInt()}%", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Text("Adherence", style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                                const SizedBox(height: 4),
+                                Text("Excellent", style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        // Quick Actions / Stats (Small)
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            children: [
+                              AppleGlassCard(
+                                padding: const EdgeInsets.all(16),
+                                onTap: () => context.push('/documents'),
+                                child: const Center(child: Icon(Icons.document_scanner_outlined, size: 28, color: AppTheme.textPrimary)),
+                              ),
+                              const SizedBox(height: 16),
+                              AppleGlassCard(
+                                padding: const EdgeInsets.all(16),
+                                child: const Center(child: Icon(Icons.favorite_border, size: 28, color: AppTheme.destructive)),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 8),
 
-                    // Medication List
+                    const SizedBox(height: 24),
+
+                    // Weekly Chart
+                    AppleGlassCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Weekly Progress", style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+                          const SizedBox(height: 20),
+                          const _WeeklyChart(),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+                    Text("Today's Plan", style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+                    const SizedBox(height: 16),
+                    
                     if (medications.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(32.0),
-                        child: Center(child: Text("No medications scheduled.", style: TextStyle(color: Colors.grey))),
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32.0),
+                          child: Text("All clear for today!", style: GoogleFonts.inter(color: AppTheme.textSecondary)),
+                        ),
                       )
                     else
-                      ...medications.map((med) => HoverScale(
-                        scale: 1.02,
-                        onTap: () => ref.read(medicationProvider.notifier).toggleTaken(med.id),
-                        child: _MedicationTile(med: med)
+                      ...medications.map((med) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: _MedicationGlassTile(med: med),
                       )),
+                      
+                    const SizedBox(height: 80), // Space for FAB
                   ]),
                 ),
               ),
             ],
           ),
           
-          // Welcome Banner Overlay
-          AnimatedPositioned(
+           // Banner
+           AnimatedPositioned(
             duration: const Duration(milliseconds: 600),
             curve: Curves.easeOutBack,
-            top: _showBanner ? 60 : -100, // Slide down
-            left: 20,
-            right: 20,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.black, // Intense Black
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 10))
-                  ]
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.check_circle, color: Colors.white, size: 20),
-                    const SizedBox(width: 12),
-                    Text(
-                      _message ?? "Welcome",
-                      style: GoogleFonts.inter(
-                        color: Colors.white, 
-                        fontWeight: FontWeight.bold, 
-                        fontSize: 16
+            top: _showBanner ? 100 : -100, 
+            left: 24,
+            right: 24,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withOpacity(0.2)),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 10))]
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle, color: AppTheme.success, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          _message ?? "Welcome",
+                          style: const TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontWeight: FontWeight.w600, 
+                            fontSize: 15
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AdherenceCard extends StatelessWidget {
-  final double adherence;
-  const _AdherenceCard({required this.adherence});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 180,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text("Adherence Score", style: TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
-                TweenAnimationBuilder<double>(
-                  tween: Tween<double>(begin: 0, end: adherence),
-                  duration: const Duration(seconds: 1),
-                  builder: (context, value, child) {
-                    return Text("${value.toInt()}%", 
-                      style: const TextStyle(fontSize: 42, fontWeight: FontWeight.bold, color: Color(0xFF007AFF)));
-                  },
-                ),
-                const SizedBox(height: 4),
-                Text("You're doing better than 80% of patients.", style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-              ],
-            ),
-          ),
-          
-          SizedBox(
-            width: 100,
-            height: 100,
-            child: PieChart(
-              PieChartData(
-                sections: [
-                  PieChartSectionData(
-                    color: const Color(0xFF007AFF), 
-                    value: adherence == 0 ? 0.1 : adherence, 
-                    radius: 12, 
-                    showTitle: false
+                    ],
                   ),
-                  PieChartSectionData(
-                    color: const Color(0xFFF2F2F7), 
-                    value: 100 - adherence, 
-                    radius: 12, 
-                    showTitle: false
-                  ),
-                ],
-                centerSpaceRadius: 35,
-                sectionsSpace: 0,
+                ),
               ),
             ),
           ),
@@ -488,12 +483,12 @@ class _AdherenceCard extends StatelessWidget {
 
 class _WeeklyChart extends ConsumerStatefulWidget {
   const _WeeklyChart();
-
   @override
   ConsumerState<_WeeklyChart> createState() => _WeeklyChartState();
 }
 
 class _WeeklyChartState extends ConsumerState<_WeeklyChart> {
+  // ... (Keep existing chart logic, just update colors)
   List<Map<String, dynamic>> _data = [];
   bool _isLoading = true;
 
@@ -503,11 +498,9 @@ class _WeeklyChartState extends ConsumerState<_WeeklyChart> {
     _loadData();
   }
   
-  // Listen to provider changes to refresh chart when meds are taken
   @override 
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Re-fetch when medication state changes (e.g. user toggles a med)
     ref.watch(medicationProvider); 
     _loadData();
   }
@@ -525,134 +518,122 @@ class _WeeklyChartState extends ConsumerState<_WeeklyChart> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 200,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text("Adherence Trends (Last 7 Days)", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-          const SizedBox(height: 20),
-          Expanded(
-            child: _isLoading 
-              ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
-              : BarChart(
-              BarChartData(
-                barGroups: _data.asMap().entries.map((e) {
-                  final index = e.key;
-                  final day = e.value['day'];
-                  final val = (e.value['value'] as num).toDouble();
-                  return _makeGroup(index, val, day);
-                }).toList(),
-                gridData: FlGridData(show: false),
-                titlesData: FlTitlesData(
-                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        if (value.toInt() < 0 || value.toInt() >= _data.length) return const SizedBox();
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(_data[value.toInt()]['day'], style: TextStyle(color: Colors.grey[400], fontSize: 12)),
-                        );
-                      },
-                    ),
-                  ),
+    return SizedBox(
+      height: 120, // Compact
+      child: _isLoading 
+        ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+        : BarChart(
+        BarChartData(
+          barGroups: _data.asMap().entries.map((e) {
+            final index = e.key;
+            final val = (e.value['value'] as num).toDouble();
+            return BarChartGroupData(
+              x: index,
+              barRods: [
+                BarChartRodData(
+                  toY: val,
+                  color: val >= 100 ? AppTheme.success : (val >= 50 ? AppTheme.primary : AppTheme.destructive),
+                  width: 8,
+                  borderRadius: BorderRadius.circular(4),
+                  backDrawRodData: BackgroundBarChartRodData(show: true, toY: 100, color: AppTheme.background),
                 ),
-                borderData: FlBorderData(show: false),
+              ],
+            );
+          }).toList(),
+          gridData: FlGridData(show: false),
+          titlesData: FlTitlesData(
+            leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, meta) {
+                  if (value.toInt() < 0 || value.toInt() >= _data.length) return const SizedBox();
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(_data[value.toInt()]['day'].substring(0,1), style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11, fontWeight: FontWeight.bold)),
+                  );
+                },
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  BarChartGroupData _makeGroup(int x, double y, String label) {
-    return BarChartGroupData(
-      x: x,
-      barRods: [
-        BarChartRodData(
-          toY: y,
-          color: y >= 100 ? const Color(0xFF34C759) : (y >= 50 ? const Color(0xFF007AFF) : const Color(0xFFFF3B30)),
-          width: 12,
-          borderRadius: BorderRadius.circular(4),
-          backDrawRodData: BackgroundBarChartRodData(show: true, toY: 100, color: const Color(0xFFF2F2F7)),
+          borderData: FlBorderData(show: false),
         ),
-      ],
+      ),
     );
   }
 }
 
-class _MedicationTile extends StatelessWidget {
+class _MedicationGlassTile extends ConsumerWidget {
   final Medication med;
-
-  const _MedicationTile({required this.med});
+  const _MedicationGlassTile({required this.med});
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: med.isTaken ? Border.all(color: const Color(0xFF34C759).withOpacity(0.3), width: 1.5) : null,
-        boxShadow: med.isTaken ? [] : [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2))
-        ],
-      ),
-      child: Row(
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: med.isTaken ? const Color(0xFF34C759).withOpacity(0.1) : const Color(0xFF007AFF).withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              med.isTaken ? Icons.check : (med.type == "Injection" ? Icons.vaccines : Icons.medication), 
-              color: med.isTaken ? const Color(0xFF34C759) : const Color(0xFF007AFF)
-            ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GestureDetector(
+      onTap: () => ref.read(medicationProvider.notifier).toggleTaken(med.id),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: med.isTaken ? AppTheme.success.withOpacity(0.2) : Colors.transparent, 
+            width: 2
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(med.name, style: TextStyle(
-                  fontWeight: FontWeight.w600, 
-                  fontSize: 16,
-                  decoration: med.isTaken ? TextDecoration.lineThrough : null,
-                  color: med.isTaken ? Colors.grey : Colors.black
-                )),
-                Text("${med.dose} • ${med.time}", style: TextStyle(color: Colors.grey[600], fontSize: 14)),
-              ],
+          boxShadow: [
+             BoxShadow(
+              color: Colors.black.withOpacity(med.isTaken ? 0.01 : 0.03), 
+              blurRadius: 10, 
+              offset: const Offset(0, 4)
+            )
+          ]
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: med.isTaken ? AppTheme.success.withOpacity(0.1) : AppTheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(
+                med.isTaken ? Icons.check : (med.type == "Injection" ? Icons.vaccines : Icons.medication), 
+                color: med.isTaken ? AppTheme.success : AppTheme.primary,
+                size: 24,
+              ),
             ),
-          ),
-          if (med.isTaken)
-            const Text("Taken", style: TextStyle(color: Color(0xFF34C759), fontWeight: FontWeight.w500))
-          else 
-            Text(med.status, style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w500)),
-        ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(med.name, style: TextStyle(
+                    fontWeight: FontWeight.w600, 
+                    fontSize: 16,
+                    decoration: med.isTaken ? TextDecoration.lineThrough : null,
+                    color: med.isTaken ? AppTheme.textSecondary : AppTheme.textPrimary
+                  )),
+                  const SizedBox(height: 2),
+                  Text("${med.dose} • ${med.time}", style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
+                ],
+              ),
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 24, 
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: med.isTaken ? AppTheme.success : Colors.transparent,
+                border: Border.all(color: med.isTaken ? AppTheme.success : AppTheme.textSecondary.withOpacity(0.3), width: 2)
+              ),
+              child: med.isTaken ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
+            )
+          ],
+        ),
       ),
     );
   }

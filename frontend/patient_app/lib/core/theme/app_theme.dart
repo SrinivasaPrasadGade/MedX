@@ -3,10 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Refined Apple Color Palette
-  static const Color background = Color(0xFFF5F5F7); // Slightly warmer/lighter gray
+  // Refined Apple Color Palette (Matches Landing Page)
+  static const Color background = Color(0xFFF5F5F7); 
   static const Color cardColor = Colors.white;
-  static const Color primary = Color(0xFF007AFF); // San Francisco Blue
-  static const Color secondary = Color(0xFF8E8E93); 
+  static const Color primary = Color(0xFF0071E3); // Exact match to Landing Page
+  static const Color textPrimary = Color(0xFF1D1D1F); // Apple Black
+  static const Color textSecondary = Color(0xFF86868B); // Apple Gray
   static const Color destructive = Color(0xFFFF3B30);
   static const Color success = Color(0xFF34C759);
   
@@ -20,29 +22,29 @@ class AppTheme {
         background: background,
         surface: cardColor,
         error: destructive,
-        secondary: secondary,
+        secondary: textSecondary, // Use textSecondary as secondary color
       ),
       textTheme: GoogleFonts.interTextTheme().copyWith(
         displayLarge: const TextStyle(
           fontSize: 34, 
           fontWeight: FontWeight.w700, // Bold
-          color: Colors.black,
+          color: textPrimary,
           letterSpacing: -0.5,
         ),
         headlineMedium: const TextStyle(
           fontSize: 22, // Slightly larger
           fontWeight: FontWeight.w700,
-          color: Colors.black,
+          color: textPrimary,
           letterSpacing: -0.4,
         ),
         bodyLarge: const TextStyle(
           fontSize: 17,
-          color: Colors.black,
+          color: textPrimary,
           height: 1.3,
         ),
         bodyMedium: const TextStyle(
           fontSize: 15,
-          color: Color(0xFF8E8E93), // Soft Gray
+          color: textSecondary, // Soft Gray
           height: 1.3,
         ),
       ),
